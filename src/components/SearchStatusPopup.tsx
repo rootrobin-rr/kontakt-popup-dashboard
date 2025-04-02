@@ -1,8 +1,7 @@
-
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { Check, X, Phone, User, Loader } from "lucide-react";
+import { BadgeCheck, BadgeX, Phone, User, Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -26,20 +25,20 @@ export interface SearchStatusPopupProps {
 const StatusIndicator = ({ status }: { status: StatusType }) => {
   // Fixed size container to prevent layout shifts
   return (
-    <div className="h-8 w-8 flex items-center justify-center">
+    <div className="h-6 w-6 flex items-center justify-center">
       {status === "loading" && (
-        <Loader className="h-5 w-5 animate-spin text-gray-400" />
+        <Loader className="h-4 w-4 animate-spin text-gray-400" />
       )}
       
       {status === "success" && (
-        <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-          <Check className="h-5 w-5 text-green-600" />
+        <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+          <BadgeCheck className="h-4 w-4 text-green-600" />
         </div>
       )}
       
       {status === "error" && (
-        <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
-          <X className="h-5 w-5 text-red-600" />
+        <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center">
+          <BadgeX className="h-4 w-4 text-red-600" />
         </div>
       )}
     </div>
@@ -54,12 +53,12 @@ const CompanyStatusRow = ({ companyName, contactStatus, personStatus }: CompanyS
         
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
-            <Phone className="h-5 w-5 text-gray-600" />
+            <Phone className="h-4 w-4 text-gray-600" />
             <StatusIndicator status={contactStatus} />
           </div>
           
           <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-gray-600" />
+            <User className="h-4 w-4 text-gray-600" />
             <StatusIndicator status={personStatus} />
           </div>
         </div>
@@ -76,6 +75,16 @@ export const SearchStatusPopup = ({
   currentAmount,
 }: SearchStatusPopupProps) => {
   const progress = Math.round((currentAmount / totalAmount) * 100);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  
+  // Auto-scroll to keep the current company in view
+  useEffect(() => {
+    if (scrollAreaRef.current && companies.length > 0) {
+      // Find the last non-idle/loading company or scroll to bottom
+      const scrollArea = scrollAreaRef.current;
+      scrollArea.scrollTop = scrollArea.scrollHeight;
+    }
+  }, [companies, currentAmount]);
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -88,7 +97,7 @@ export const SearchStatusPopup = ({
             <Progress value={progress} className="h-2" />
           </div>
           
-          <ScrollArea className="h-[50vh]">
+          <ScrollArea className="h-[50vh]" ref={scrollAreaRef}>
             <div className="pr-4">
               {companies.map((company, index) => (
                 <CompanyStatusRow
