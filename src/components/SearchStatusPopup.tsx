@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { BadgeCheck, BadgeX, Phone, User, Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -81,27 +81,28 @@ export const SearchStatusPopup = ({
   // Auto-scroll to keep the current company in view
   useEffect(() => {
     if (scrollAreaRef.current && companies.length > 0) {
-      const scrollArea = scrollAreaRef.current;
+      // We need to access the actual DOM element that contains the scroll
+      const scrollableElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       
-      // Add a small delay to ensure DOM has updated
-      setTimeout(() => {
-        // Calculate the height needed to show the last item at the bottom
-        const lastItemHeight = 80; // Approximate height of one company row
-        const visibleHeight = scrollArea.clientHeight;
-        const contentHeight = scrollArea.scrollHeight;
-        
-        // If content is taller than visible area, scroll to position the last item at bottom
-        if (contentHeight > visibleHeight) {
-          // Scroll so the newest item (at the bottom) is fully visible
-          scrollArea.scrollTop = contentHeight - visibleHeight;
-        }
-      }, 50);
+      if (scrollableElement) {
+        // Use requestAnimationFrame to ensure the DOM has been updated
+        requestAnimationFrame(() => {
+          // Scroll to the bottom to show the most recent companies
+          scrollableElement.scrollTop = scrollableElement.scrollHeight;
+          
+          // For a more robust solution, do another check after a short delay
+          setTimeout(() => {
+            scrollableElement.scrollTop = scrollableElement.scrollHeight;
+          }, 100);
+        });
+      }
     }
-  }, [companies, currentAmount]);
+  }, [companies, currentAmount]); // Depends on companies and currentAmount
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md md:max-w-lg">
+        <DialogTitle className="sr-only">Search Progress</DialogTitle>
         <div className="flex flex-col gap-6">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">
