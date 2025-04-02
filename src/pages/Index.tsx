@@ -1,11 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { SearchStatusPopup, StatusType, CompanyStatusProps } from "@/components/SearchStatusPopup";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Mock data for demonstration - expanded to 20 companies
+// Mock data for demonstration
 const mockCompanies = [
   "Acme Inc",
   "Globex Corporation", 
@@ -29,41 +29,40 @@ const mockCompanies = [
   "Hanso Foundation"
 ];
 
-// Add this to your tailwind.config.ts:
-// animation: {
-//   "infinite-scroll-y": "infiniteScrollY 25s linear infinite",
-// },
-// keyframes: {
-//   infiniteScrollY: {
-//     from: { transform: "translateY(0)" },
-//     to: { transform: "translateY(calc(-50% - 1rem))" },
-//   },
-// },
-
 const Index = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<CompanyStatusProps[]>([]);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>(mockCompanies);
   
   const simulateSearch = () => {
-    // Use all 20 companies for demo
-    const selectedCompanies = mockCompanies;
-    const total = selectedCompanies.length;
+    // Filter selected companies
+    const companiesToSearch = mockCompanies.filter((_, index) => {
+      const checkbox = document.getElementById(`company-${index}`) as HTMLInputElement;
+      return checkbox?.checked;
+    });
+    
+    const total = companiesToSearch.length;
+    
+    if (total === 0) {
+      toast.error("Please select at least one company to search");
+      return;
+    }
     
     setSearchResults([]);
     setProgress({ current: 0, total });
     setIsSearching(true);
     
-    // Process companies one at a time for the new animation approach
+    // Process one company at a time
     let current = 0;
     
     const processCompany = (index: number) => {
-      if (index >= selectedCompanies.length) {
+      if (index >= companiesToSearch.length) {
         toast.success("Search completed!");
         return;
       }
       
-      const company = selectedCompanies[index];
+      const company = companiesToSearch[index];
       
       // Add the company with loading status
       setSearchResults(prev => [
@@ -75,31 +74,43 @@ const Index = () => {
         }
       ]);
       
-      // Simulate processing time
+      // First simulate finding contact info after a delay
       setTimeout(() => {
-        current += 1;
-        setProgress({ current, total });
-        
-        // Randomly determine if we found contact info and person info
         const contactFound = Math.random() > 0.3;
-        const personFound = Math.random() > 0.3;
         
-        // Update the status of the current company
         setSearchResults(prev => {
           const updated = [...prev];
-          updated[index] = {
-            companyName: company,
+          const lastIndex = updated.length - 1;
+          updated[lastIndex] = {
+            ...updated[lastIndex],
             contactStatus: contactFound ? "success" : "error",
-            personStatus: personFound ? "success" : "error"
           };
           return updated;
         });
         
-        // Process the next company after a delay
+        // Then simulate finding person info after another delay
         setTimeout(() => {
-          processCompany(index + 1);
-        }, 300);
-      }, 1200); // Processing time for each company
+          const personFound = Math.random() > 0.3;
+          
+          setSearchResults(prev => {
+            const updated = [...prev];
+            const lastIndex = updated.length - 1;
+            updated[lastIndex] = {
+              ...updated[lastIndex],
+              personStatus: personFound ? "success" : "error",
+            };
+            return updated;
+          });
+          
+          // Update progress and process next company after a delay
+          current += 1;
+          setProgress({ current, total });
+          
+          setTimeout(() => {
+            processCompany(index + 1);
+          }, 1000);
+        }, 800); // Delay for finding person info
+      }, 1200); // Delay for finding contact info
     };
     
     // Start processing with the first company

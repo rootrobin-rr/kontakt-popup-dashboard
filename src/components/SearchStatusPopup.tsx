@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { BadgeCheck, BadgeX, Phone, User, Loader, Link } from "lucide-react";
@@ -44,8 +44,19 @@ const StatusIndicator = ({ status }: { status: StatusType }) => {
 };
 
 const CompanyStatusRow = ({ companyName, contactStatus, personStatus }: CompanyStatusProps) => {
+  // Determine if the company data search is complete
+  const isSearchComplete = contactStatus !== "loading" && personStatus !== "loading";
+  
+  // Apply different classes based on search status
+  const animationClass = isSearchComplete 
+    ? "transition-transform duration-700 transform translate-y-[-100%]" 
+    : "";
+  
   return (
-    <div className="mt-4 flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-[0_4px_12px_0_#0000000D]">
+    <div className={cn(
+      "flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-[0_4px_12px_0_#0000000D] mb-4",
+      animationClass
+    )}>
       <Link className="h-4 w-4 text-neutral-700" />
       <div className="font-medium">{companyName}</div>
       
@@ -84,21 +95,11 @@ export const SearchStatusPopup = ({
         <div className="flex flex-col gap-6">
           <Progress value={progress} className="h-2" />
           
-          <div className="h-[40vh] w-full max-w-full overflow-hidden px-4 [mask-image:linear-gradient(transparent,black_10%,black_90%,transparent)]">
-            <div className="animate-infinite-scroll-y flex flex-col [animation-duration:15s]" style={{ "--scroll": "-50%" } as React.CSSProperties}>
+          <div className="h-[40vh] flex flex-col overflow-hidden relative">
+            <div className="absolute bottom-0 left-0 right-0 flex flex-col gap-2 px-4">
               {companies.map((company, index) => (
                 <CompanyStatusRow
                   key={`${company.companyName}-${index}`}
-                  companyName={company.companyName}
-                  contactStatus={company.contactStatus}
-                  personStatus={company.personStatus}
-                />
-              ))}
-              
-              {/* Duplicate items to create seamless loop */}
-              {companies.length > 0 && companies.map((company, index) => (
-                <CompanyStatusRow
-                  key={`${company.companyName}-duplicate-${index}`}
                   companyName={company.companyName}
                   contactStatus={company.contactStatus}
                   personStatus={company.personStatus}
