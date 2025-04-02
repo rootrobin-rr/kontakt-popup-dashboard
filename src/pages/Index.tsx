@@ -60,7 +60,7 @@ const Index = () => {
       if (index >= companiesToSearch.length) {
         setTimeout(() => {
           toast.success("Search completed!");
-        }, 1000);
+        }, 1500);
         return;
       }
       
@@ -110,9 +110,9 @@ const Index = () => {
           
           setTimeout(() => {
             processCompany(index + 1);
-          }, 1500); // Increased delay for smoother animation sequence
-        }, 900); // Delay for finding person info
-      }, 1200); // Delay for finding contact info
+          }, 2000); // Increased delay for smoother animation sequence
+        }, 1200); // Delay for finding person info
+      }, 1500); // Delay for finding contact info
     };
     
     // Start processing with the first company

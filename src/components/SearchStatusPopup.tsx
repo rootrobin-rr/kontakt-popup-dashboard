@@ -96,15 +96,21 @@ export const SearchStatusPopup = ({
           <Progress value={progress} className="h-2" />
           
           <div className="h-[40vh] flex flex-col overflow-hidden relative">
-            <div className="absolute bottom-0 left-0 right-0 flex flex-col gap-2 px-4 w-full">
-              {companies.map((company, index) => (
-                <CompanyStatusRow
-                  key={`${company.companyName}-${index}`}
-                  companyName={company.companyName}
-                  contactStatus={company.contactStatus}
-                  personStatus={company.personStatus}
-                />
-              ))}
+            {/* Masked container to create fade effect at top and bottom */}
+            <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)]">
+              {/* Center container with company cards */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="w-full px-4 space-y-4 -translate-y-1/2">
+                  {companies.map((company, index) => (
+                    <CompanyStatusRow
+                      key={`${company.companyName}-${index}`}
+                      companyName={company.companyName}
+                      contactStatus={company.contactStatus}
+                      personStatus={company.personStatus}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
