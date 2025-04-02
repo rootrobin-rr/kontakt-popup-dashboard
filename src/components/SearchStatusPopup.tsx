@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
@@ -80,9 +81,21 @@ export const SearchStatusPopup = ({
   // Auto-scroll to keep the current company in view
   useEffect(() => {
     if (scrollAreaRef.current && companies.length > 0) {
-      // Find the last non-idle/loading company or scroll to bottom
       const scrollArea = scrollAreaRef.current;
-      scrollArea.scrollTop = scrollArea.scrollHeight;
+      
+      // Add a small delay to ensure DOM has updated
+      setTimeout(() => {
+        // Calculate the height needed to show the last item at the bottom
+        const lastItemHeight = 80; // Approximate height of one company row
+        const visibleHeight = scrollArea.clientHeight;
+        const contentHeight = scrollArea.scrollHeight;
+        
+        // If content is taller than visible area, scroll to position the last item at bottom
+        if (contentHeight > visibleHeight) {
+          // Scroll so the newest item (at the bottom) is fully visible
+          scrollArea.scrollTop = contentHeight - visibleHeight;
+        }
+      }, 50);
     }
   }, [companies, currentAmount]);
   
