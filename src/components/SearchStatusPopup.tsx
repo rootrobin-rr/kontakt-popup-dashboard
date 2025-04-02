@@ -49,12 +49,12 @@ const CompanyStatusRow = ({ companyName, contactStatus, personStatus }: CompanyS
   
   // Apply different classes based on search status
   const animationClass = isSearchComplete 
-    ? "transition-transform duration-700 transform translate-y-[-100%]" 
+    ? "animate-slide-up" 
     : "";
   
   return (
     <div className={cn(
-      "flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-[0_4px_12px_0_#0000000D] mb-4",
+      "flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-[0_4px_12px_0_#0000000D] mb-4 transition-all duration-700 ease-in-out transform",
       animationClass
     )}>
       <Link className="h-4 w-4 text-neutral-700" />
@@ -96,7 +96,7 @@ export const SearchStatusPopup = ({
           <Progress value={progress} className="h-2" />
           
           <div className="h-[40vh] flex flex-col overflow-hidden relative">
-            <div className="absolute bottom-0 left-0 right-0 flex flex-col gap-2 px-4">
+            <div className="absolute bottom-0 left-0 right-0 flex flex-col gap-2 px-4 w-full">
               {companies.map((company, index) => (
                 <CompanyStatusRow
                   key={`${company.companyName}-${index}`}
