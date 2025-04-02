@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Check, X, Phone, User, Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 export type StatusType = "success" | "error" | "loading" | "idle";
 
@@ -47,26 +48,23 @@ const StatusIndicator = ({ status }: { status: StatusType }) => {
 
 const CompanyStatusRow = ({ companyName, contactStatus, personStatus }: CompanyStatusProps) => {
   return (
-    <div className={cn(
-      "flex items-center justify-between py-4 px-3 rounded-md", 
-      "transition-colors duration-200",
-      contactStatus === "success" && personStatus === "success" ? "bg-green-50" : "",
-      contactStatus === "error" && personStatus === "error" ? "bg-red-50" : ""
-    )}>
-      <div className="font-medium text-lg">{companyName}</div>
-      
-      <div className="flex items-center gap-8">
-        <div className="flex items-center gap-2">
-          <Phone className="h-5 w-5 text-gray-600" />
-          <StatusIndicator status={contactStatus} />
-        </div>
+    <Card className="mb-3">
+      <div className="flex items-center justify-between py-4 px-4">
+        <div className="font-medium text-lg">{companyName}</div>
         
-        <div className="flex items-center gap-2">
-          <User className="h-5 w-5 text-gray-600" />
-          <StatusIndicator status={personStatus} />
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-2">
+            <Phone className="h-5 w-5 text-gray-600" />
+            <StatusIndicator status={contactStatus} />
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5 text-gray-600" />
+            <StatusIndicator status={personStatus} />
+          </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -90,7 +88,7 @@ export const SearchStatusPopup = ({
             <Progress value={progress} className="h-2" />
           </div>
           
-          <div className="space-y-2">
+          <div>
             {companies.map((company, index) => (
               <CompanyStatusRow
                 key={`${company.companyName}-${index}`}
