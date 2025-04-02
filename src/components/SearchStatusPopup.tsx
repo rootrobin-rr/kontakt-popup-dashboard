@@ -1,10 +1,9 @@
 
-import React, { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import React, { useEffect } from "react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { BadgeCheck, BadgeX, Phone, User, Loader } from "lucide-react";
+import { BadgeCheck, BadgeX, Phone, User, Loader, Link } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
 
 export type StatusType = "success" | "error" | "loading" | "idle";
 
@@ -23,7 +22,6 @@ export interface SearchStatusPopupProps {
 }
 
 const StatusIndicator = ({ status }: { status: StatusType }) => {
-  // Fixed size container to prevent layout shifts
   return (
     <div className="h-5 w-5 flex items-center justify-center">
       {status === "loading" && (
@@ -47,23 +45,22 @@ const StatusIndicator = ({ status }: { status: StatusType }) => {
 
 const CompanyStatusRow = ({ companyName, contactStatus, personStatus }: CompanyStatusProps) => {
   return (
-    <Card className="mb-3">
-      <div className="flex items-center justify-between py-3 px-4">
-        <div className="font-medium text-lg">{companyName}</div>
+    <div className="mt-4 flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-4 shadow-[0_4px_12px_0_#0000000D]">
+      <Link className="h-4 w-4 text-neutral-700" />
+      <div className="font-medium">{companyName}</div>
+      
+      <div className="flex items-center ml-auto gap-8">
+        <div className="flex items-center gap-2">
+          <Phone className="h-3 w-3 text-gray-600" />
+          <StatusIndicator status={contactStatus} />
+        </div>
         
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2">
-            <Phone className="h-3 w-3 text-gray-600" />
-            <StatusIndicator status={contactStatus} />
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <User className="h-3 w-3 text-gray-600" />
-            <StatusIndicator status={personStatus} />
-          </div>
+        <div className="flex items-center gap-2">
+          <User className="h-3 w-3 text-gray-600" />
+          <StatusIndicator status={personStatus} />
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 
@@ -75,60 +72,39 @@ export const SearchStatusPopup = ({
   currentAmount,
 }: SearchStatusPopupProps) => {
   const progress = Math.round((currentAmount / totalAmount) * 100);
-  const [visibleCompanies, setVisibleCompanies] = useState<CompanyStatusProps[]>([]);
   
-  // Update visible companies whenever the companies prop changes
-  useEffect(() => {
-    if (companies.length === 0) {
-      setVisibleCompanies([]);
-      return;
-    }
-    
-    // Always show the 5 most recent companies (or fewer if there are less than 5)
-    const startIndex = Math.max(0, companies.length - 5);
-    const recentCompanies = companies.slice(startIndex);
-    setVisibleCompanies(recentCompanies);
-  }, [companies]);
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md md:max-w-lg">
-        <DialogTitle className="sr-only">Search Progress</DialogTitle>
+        <DialogTitle>Search Progress</DialogTitle>
+        <DialogDescription>
+          Searched {currentAmount} out of {totalAmount}
+        </DialogDescription>
+        
         <div className="flex flex-col gap-6">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2">
-              searched {currentAmount} out of {totalAmount}
-            </h2>
-            <Progress value={progress} className="h-2" />
-          </div>
+          <Progress value={progress} className="h-2" />
           
-          <div className="relative h-[50vh] overflow-hidden">
-            {visibleCompanies.map((company, index) => {
-              // Calculate position - newer items appear at the bottom
-              const isNewest = index === visibleCompanies.length - 1;
-              const isOldest = index === 0;
-              
-              const position = isNewest ? 'bottom' : 
-                               isOldest ? 'exiting' : 'visible';
-              
-              return (
-                <div 
+          <div className="h-[40vh] w-full max-w-full overflow-hidden px-4 [mask-image:linear-gradient(transparent,black_10%,black_90%,transparent)]">
+            <div className="animate-infinite-scroll-y flex flex-col [animation-duration:15s]" style={{ "--scroll": "-50%" } as React.CSSProperties}>
+              {companies.map((company, index) => (
+                <CompanyStatusRow
                   key={`${company.companyName}-${index}`}
-                  className={cn(
-                    "absolute w-full transition-all duration-500 ease-in-out px-1",
-                    position === 'bottom' && "bottom-0 opacity-100 translate-y-0",
-                    position === 'visible' && `bottom-${(visibleCompanies.length - 1 - index) * 25}% opacity-100`,
-                    position === 'exiting' && "bottom-100% opacity-0 translate-y-[-20px]"
-                  )}
-                >
-                  <CompanyStatusRow
-                    companyName={company.companyName}
-                    contactStatus={company.contactStatus}
-                    personStatus={company.personStatus}
-                  />
-                </div>
-              );
-            })}
+                  companyName={company.companyName}
+                  contactStatus={company.contactStatus}
+                  personStatus={company.personStatus}
+                />
+              ))}
+              
+              {/* Duplicate items to create seamless loop */}
+              {companies.length > 0 && companies.map((company, index) => (
+                <CompanyStatusRow
+                  key={`${company.companyName}-duplicate-${index}`}
+                  companyName={company.companyName}
+                  contactStatus={company.contactStatus}
+                  personStatus={company.personStatus}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </DialogContent>

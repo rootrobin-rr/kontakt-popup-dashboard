@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SearchStatusPopup, StatusType, CompanyStatusProps } from "@/components/SearchStatusPopup";
 import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Mock data for demonstration - expanded to 20 companies
 const mockCompanies = [
@@ -27,6 +28,17 @@ const mockCompanies = [
   "Abstergo Industries",
   "Hanso Foundation"
 ];
+
+// Add this to your tailwind.config.ts:
+// animation: {
+//   "infinite-scroll-y": "infiniteScrollY 25s linear infinite",
+// },
+// keyframes: {
+//   infiniteScrollY: {
+//     from: { transform: "translateY(0)" },
+//     to: { transform: "translateY(calc(-50% - 1rem))" },
+//   },
+// },
 
 const Index = () => {
   const [isSearching, setIsSearching] = useState(false);
@@ -104,7 +116,7 @@ const Index = () => {
             Search for contact information and personnel details for selected companies.
           </p>
           
-          <div className="border rounded-md p-4 max-h-60 overflow-y-auto">
+          <ScrollArea className="h-60 border rounded-md p-4">
             {mockCompanies.map((company, index) => (
               <div key={index} className="flex items-center mb-2 last:mb-0">
                 <input 
@@ -116,7 +128,7 @@ const Index = () => {
                 <label htmlFor={`company-${index}`}>{company}</label>
               </div>
             ))}
-          </div>
+          </ScrollArea>
           
           <Button 
             className="w-full" 
