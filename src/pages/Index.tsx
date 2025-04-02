@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { SearchStatusPopup, StatusType, CompanyStatusProps } from "@/components/SearchStatusPopup";
 import { toast } from "sonner";
 
-// Mock data for demonstration
+// Mock data for demonstration - expanded to 20 companies
 const mockCompanies = [
   "Acme Inc",
   "Globex Corporation", 
@@ -13,7 +13,19 @@ const mockCompanies = [
   "Umbrella Corporation",
   "Cyberdyne Systems",
   "Soylent Corp",
-  "Massive Dynamic"
+  "Massive Dynamic",
+  "Aperture Science",
+  "Oscorp Industries",
+  "Weyland-Yutani Corp",
+  "Tyrell Corporation",
+  "InGen",
+  "Rekall Inc",
+  "Omni Consumer Products",
+  "Buy n Large",
+  "Blue Sun Corporation",
+  "Monarch Sciences",
+  "Abstergo Industries",
+  "Hanso Foundation"
 ];
 
 const Index = () => {
@@ -22,7 +34,8 @@ const Index = () => {
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   
   const simulateSearch = () => {
-    const selectedCompanies = mockCompanies.slice(0, 5); // For demo we'll just use 5 companies
+    // Use all 20 companies for demo
+    const selectedCompanies = mockCompanies;
     const total = selectedCompanies.length;
     
     setSearchResults([]);
@@ -64,7 +77,7 @@ const Index = () => {
         if (current === total) {
           toast.success("Search completed!");
         }
-      }, (index + 1) * 1200); // Stagger the updates
+      }, (index + 1) * 800); // Slightly faster updates so we don't wait too long
     });
   };
   
@@ -85,7 +98,7 @@ const Index = () => {
                   type="checkbox" 
                   id={`company-${index}`} 
                   className="mr-2"
-                  defaultChecked={index < 5}
+                  defaultChecked
                 />
                 <label htmlFor={`company-${index}`}>{company}</label>
               </div>

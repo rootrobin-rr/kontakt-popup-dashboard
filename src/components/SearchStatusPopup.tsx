@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Check, X, Phone, User, Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export type StatusType = "success" | "error" | "loading" | "idle";
 
@@ -23,27 +24,26 @@ export interface SearchStatusPopupProps {
 }
 
 const StatusIndicator = ({ status }: { status: StatusType }) => {
-  if (status === "loading") {
-    return <Loader className="h-5 w-5 animate-spin text-gray-400" />;
-  }
-  
-  if (status === "success") {
-    return (
-      <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-        <Check className="h-5 w-5 text-green-600" />
-      </div>
-    );
-  }
-  
-  if (status === "error") {
-    return (
-      <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
-        <X className="h-5 w-5 text-red-600" />
-      </div>
-    );
-  }
-  
-  return null;
+  // Fixed size container to prevent layout shifts
+  return (
+    <div className="h-8 w-8 flex items-center justify-center">
+      {status === "loading" && (
+        <Loader className="h-5 w-5 animate-spin text-gray-400" />
+      )}
+      
+      {status === "success" && (
+        <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+          <Check className="h-5 w-5 text-green-600" />
+        </div>
+      )}
+      
+      {status === "error" && (
+        <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
+          <X className="h-5 w-5 text-red-600" />
+        </div>
+      )}
+    </div>
+  );
 };
 
 const CompanyStatusRow = ({ companyName, contactStatus, personStatus }: CompanyStatusProps) => {
@@ -79,7 +79,7 @@ export const SearchStatusPopup = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md md:max-w-lg max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md md:max-w-lg">
         <div className="flex flex-col gap-6">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">
@@ -88,16 +88,18 @@ export const SearchStatusPopup = ({
             <Progress value={progress} className="h-2" />
           </div>
           
-          <div>
-            {companies.map((company, index) => (
-              <CompanyStatusRow
-                key={`${company.companyName}-${index}`}
-                companyName={company.companyName}
-                contactStatus={company.contactStatus}
-                personStatus={company.personStatus}
-              />
-            ))}
-          </div>
+          <ScrollArea className="h-[50vh]">
+            <div className="pr-4">
+              {companies.map((company, index) => (
+                <CompanyStatusRow
+                  key={`${company.companyName}-${index}`}
+                  companyName={company.companyName}
+                  contactStatus={company.contactStatus}
+                  personStatus={company.personStatus}
+                />
+              ))}
+            </div>
+          </ScrollArea>
         </div>
       </DialogContent>
     </Dialog>
