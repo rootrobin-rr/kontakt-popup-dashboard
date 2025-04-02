@@ -1,11 +1,10 @@
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { BadgeCheck, BadgeX, Phone, User, Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export type StatusType = "success" | "error" | "loading" | "idle";
 
@@ -26,20 +25,20 @@ export interface SearchStatusPopupProps {
 const StatusIndicator = ({ status }: { status: StatusType }) => {
   // Fixed size container to prevent layout shifts
   return (
-    <div className="h-6 w-6 flex items-center justify-center">
+    <div className="h-5 w-5 flex items-center justify-center">
       {status === "loading" && (
-        <Loader className="h-4 w-4 animate-spin text-gray-400" />
+        <Loader className="h-3 w-3 animate-spin text-gray-400" />
       )}
       
       {status === "success" && (
-        <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
-          <BadgeCheck className="h-4 w-4 text-green-600" />
+        <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center">
+          <BadgeCheck className="h-3 w-3 text-green-600" />
         </div>
       )}
       
       {status === "error" && (
-        <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center">
-          <BadgeX className="h-4 w-4 text-red-600" />
+        <div className="h-5 w-5 rounded-full bg-red-100 flex items-center justify-center">
+          <BadgeX className="h-3 w-3 text-red-600" />
         </div>
       )}
     </div>
@@ -49,17 +48,17 @@ const StatusIndicator = ({ status }: { status: StatusType }) => {
 const CompanyStatusRow = ({ companyName, contactStatus, personStatus }: CompanyStatusProps) => {
   return (
     <Card className="mb-3">
-      <div className="flex items-center justify-between py-4 px-4">
+      <div className="flex items-center justify-between py-3 px-4">
         <div className="font-medium text-lg">{companyName}</div>
         
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 text-gray-600" />
+            <Phone className="h-3 w-3 text-gray-600" />
             <StatusIndicator status={contactStatus} />
           </div>
           
           <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-gray-600" />
+            <User className="h-3 w-3 text-gray-600" />
             <StatusIndicator status={personStatus} />
           </div>
         </div>
@@ -76,29 +75,21 @@ export const SearchStatusPopup = ({
   currentAmount,
 }: SearchStatusPopupProps) => {
   const progress = Math.round((currentAmount / totalAmount) * 100);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [visibleCompanies, setVisibleCompanies] = useState<CompanyStatusProps[]>([]);
   
-  // Auto-scroll to keep the current company in view
+  // Update visible companies whenever the companies prop changes
   useEffect(() => {
-    if (scrollAreaRef.current && companies.length > 0) {
-      // We need to access the actual DOM element that contains the scroll
-      const scrollableElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      
-      if (scrollableElement) {
-        // Use requestAnimationFrame to ensure the DOM has been updated
-        requestAnimationFrame(() => {
-          // Scroll to the bottom to show the most recent companies
-          scrollableElement.scrollTop = scrollableElement.scrollHeight;
-          
-          // For a more robust solution, do another check after a short delay
-          setTimeout(() => {
-            scrollableElement.scrollTop = scrollableElement.scrollHeight;
-          }, 100);
-        });
-      }
+    if (companies.length === 0) {
+      setVisibleCompanies([]);
+      return;
     }
-  }, [companies, currentAmount]); // Depends on companies and currentAmount
-  
+    
+    // Always show the 5 most recent companies (or fewer if there are less than 5)
+    const startIndex = Math.max(0, companies.length - 5);
+    const recentCompanies = companies.slice(startIndex);
+    setVisibleCompanies(recentCompanies);
+  }, [companies]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md md:max-w-lg">
@@ -111,18 +102,34 @@ export const SearchStatusPopup = ({
             <Progress value={progress} className="h-2" />
           </div>
           
-          <ScrollArea className="h-[50vh]" ref={scrollAreaRef}>
-            <div className="pr-4">
-              {companies.map((company, index) => (
-                <CompanyStatusRow
+          <div className="relative h-[50vh] overflow-hidden">
+            {visibleCompanies.map((company, index) => {
+              // Calculate position - newer items appear at the bottom
+              const isNewest = index === visibleCompanies.length - 1;
+              const isOldest = index === 0;
+              
+              const position = isNewest ? 'bottom' : 
+                               isOldest ? 'exiting' : 'visible';
+              
+              return (
+                <div 
                   key={`${company.companyName}-${index}`}
-                  companyName={company.companyName}
-                  contactStatus={company.contactStatus}
-                  personStatus={company.personStatus}
-                />
-              ))}
-            </div>
-          </ScrollArea>
+                  className={cn(
+                    "absolute w-full transition-all duration-500 ease-in-out px-1",
+                    position === 'bottom' && "bottom-0 opacity-100 translate-y-0",
+                    position === 'visible' && `bottom-${(visibleCompanies.length - 1 - index) * 25}% opacity-100`,
+                    position === 'exiting' && "bottom-100% opacity-0 translate-y-[-20px]"
+                  )}
+                >
+                  <CompanyStatusRow
+                    companyName={company.companyName}
+                    contactStatus={company.contactStatus}
+                    personStatus={company.personStatus}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

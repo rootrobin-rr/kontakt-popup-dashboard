@@ -42,19 +42,28 @@ const Index = () => {
     setProgress({ current: 0, total });
     setIsSearching(true);
     
-    // Initialize all companies as loading
-    const initialResults = selectedCompanies.map(name => ({
-      companyName: name,
-      contactStatus: "loading" as StatusType,
-      personStatus: "loading" as StatusType
-    }));
-    
-    setSearchResults(initialResults);
-    
-    // Simulate search progress with delays
+    // Process companies one at a time for the new animation approach
     let current = 0;
     
-    selectedCompanies.forEach((company, index) => {
+    const processCompany = (index: number) => {
+      if (index >= selectedCompanies.length) {
+        toast.success("Search completed!");
+        return;
+      }
+      
+      const company = selectedCompanies[index];
+      
+      // Add the company with loading status
+      setSearchResults(prev => [
+        ...prev,
+        {
+          companyName: company,
+          contactStatus: "loading",
+          personStatus: "loading"
+        }
+      ]);
+      
+      // Simulate processing time
       setTimeout(() => {
         current += 1;
         setProgress({ current, total });
@@ -63,6 +72,7 @@ const Index = () => {
         const contactFound = Math.random() > 0.3;
         const personFound = Math.random() > 0.3;
         
+        // Update the status of the current company
         setSearchResults(prev => {
           const updated = [...prev];
           updated[index] = {
@@ -73,12 +83,15 @@ const Index = () => {
           return updated;
         });
         
-        // When search is complete
-        if (current === total) {
-          toast.success("Search completed!");
-        }
-      }, (index + 1) * 800); // Slightly faster updates so we don't wait too long
-    });
+        // Process the next company after a delay
+        setTimeout(() => {
+          processCompany(index + 1);
+        }, 300);
+      }, 1200); // Processing time for each company
+    };
+    
+    // Start processing with the first company
+    processCompany(0);
   };
   
   return (
